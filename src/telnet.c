@@ -1,14 +1,16 @@
-
-
 #include "telnet.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include "esp_log.h"
 
+
 #define TELNET_PORT 23
 #define LISTEN_QUEUE 2
 
 static const char* TAG = "TelnetServer";
+static volatile bool keepRunning = true;  // Global flag to control server operation
+static Motor *motor_left;
+static Motor *motor_right;
 
 static void telnet_server_task(void *pvParameters) {
     char rx_buffer[128];
@@ -23,54 +25,80 @@ static void telnet_server_task(void *pvParameters) {
 
     int listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
     if (listen_sock < 0) {
-        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+        close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
-    ESP_LOGI(TAG, "Socket created");
 
     int err = bind(listen_sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if (err != 0) {
-        ESP_LOGE(TAG, "Socket unable to bind: errno %d", errno);
+        close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
-    ESP_LOGI(TAG, "Socket bound, port %d", TELNET_PORT);
 
     err = listen(listen_sock, LISTEN_QUEUE);
     if (err != 0) {
-        ESP_LOGE(TAG, "Error occurred during listen: errno %d", errno);
+        close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
 
-    while (1) {
-        ESP_LOGI(TAG, "Socket listening");
-
+    while (keepRunning) {
         struct sockaddr_in source_addr;
-        uint addr_len = sizeof(source_addr);
+        socklen_t addr_len = sizeof(source_addr);
         int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
         if (sock < 0) {
-            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
-            break;
+            continue; // Continue trying to accept connections even if one fails
         }
-        ESP_LOGI(TAG, "Socket accepted");
 
         while (1) {
             int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-            // Echo the received data back
-            if (len > 0) {
-                send(sock, rx_buffer, len, 0);
-            } else if (len < 0) {
-                ESP_LOGE(TAG, "Recv failed: errno %d", errno);
-                break;
+            if (len > 6) {
+                rx_buffer[len] = 0;  // Null-terminate whatever we received and treat like a string.
+
+                // Process received data
+                char* receivedData = rx_buffer;
+                char* response = malloc(strlen("OK: ") + strlen(receivedData) + strlen("\n") + 1);
+                /**>
+                 * First Digit is type of command
+                 * 0 - Motor Control
+                 * 1 - LED Control
+                 * 2 - Sensor Data
+                 * 3 - Other
+                 *
+                 * Second Digit is the specific LED/MOTOR/SENSOR/other this is specific except these
+                 * 0 - All
+                 * 1 - Left
+                 * 2 - Right
+                 *
+                 * Third, Fourth & Fifth Digit is the VALUE
+                 * Like % degree or other
+                 * */
+                if(receivedData[0] == '0'){
+                    // Motor Control
+                    switch (receivedData[2]) {
+                        case '0':
+                            motor_set_speed(motor_left, atoi(strndup(receivedData + 2, 3)));
+                            motor_set_speed(motor_right, atoi(strndup(receivedData + 2, 3)));
+                            break;
+                    }
+                }else if (receivedData[0] == '1'){
+                    // LED Control
+                }else if (receivedData[0] == '2'){
+                    // Sensor Data
+                }else if (receivedData[0] == '3'){
+                    // Other
+                }
+
+                send(sock, response, len, 0);//
+                free(response);
             } else {
-                ESP_LOGI(TAG, "Connection closed");
-                break;
+                break;  // Break if the connection is closed or an error occurs
             }
         }
 
-        shutdown(sock, 0);
+        shutdown(sock, SHUT_RDWR);  // Disable further sends and receives on the socket
         close(sock);
     }
 
@@ -78,6 +106,16 @@ static void telnet_server_task(void *pvParameters) {
     vTaskDelete(NULL);
 }
 
-void start_telnet_server(void) {
-    xTaskCreate(telnet_server_task, "telnet_server_task", 2048, NULL, 5, NULL);
+bool start_telnet_server(void) {
+    if (xTaskCreate(telnet_server_task, "telnet_server_task", 2048, NULL, 5, NULL) != pdPASS) {
+        return true;  // Return true to indicate error in task creation
+    }
+    return false;  // Return false to indicate successful task creation
+}
+void stop_telnet_server() {
+    keepRunning = false;  // Signal the server task to exit
+}
+void register_motor(Motor *motorLeft, Motor *motorRight){
+    motor_left = motorLeft;
+    motor_right = motorRight;
 }

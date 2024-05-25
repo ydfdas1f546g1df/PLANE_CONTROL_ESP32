@@ -4,6 +4,8 @@
 #define TELNET_H
 
 #include "freertos/FreeRTOS.h"
+#include "motor_control.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,8 +14,9 @@ extern "C" {
 /**
  * @brief Start the Telnet server task.
  */
-void start_telnet_server(void);
-
+bool start_telnet_server(void);
+void stop_telnet_server();
+void register_motor(Motor *motorLeft, Motor *motorRight);
 #ifdef __cplusplus
 }
 #endif

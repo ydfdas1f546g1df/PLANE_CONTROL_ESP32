@@ -1,6 +1,7 @@
 #include "driver/gpio.h"
 #include "motor_control.h"
 #include "wifi_direct.h"
+#include "telnet.h"
 
 
 // IO pins
@@ -77,13 +78,21 @@ void setup() {
 }
 
 void app_main() {
+    // Init GPIO
     setup();
 
+    // Initialize communication
     gpio_set_level(LED_DEBUG, 1);
     if(wifi_init_p2p()){
         gpio_set_level(LED_DEBUG_GREEN, 1);
         gpio_set_level(LED_DEBUG_RED, 0);
     }
+    if(start_telnet_server()){
+        gpio_set_level(LED_DEBUG_GREEN, 1);
+        gpio_set_level(LED_DEBUG_RED, 0);
+    }
+    register_motor
     gpio_set_level(LED_DEBUG, 0);
+
 
 }

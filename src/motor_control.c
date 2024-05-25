@@ -60,13 +60,13 @@ Motor motor_init(uint8_t gpio_num, ledc_channel_t channel) {
 }
 
 // Set motor speed (duty cycle)
-void motor_set_speed(Motor motor, uint8_t speed) {
+void motor_set_speed(Motor *motor, uint8_t speed) {
 #if defined(SOC_LEDC_SUPPORT_HS_MODE) // Check if high-speed mode is supported
     ledc_set_duty(LEDC_HIGH_SPEED_MODE, motor.channel, speed);
     ledc_update_duty(LEDC_HIGH_SPEED_MODE, motor.channel);
 #else
-    ledc_set_duty(LEDC_LOW_SPEED_MODE, motor.channel, speed);
-    ledc_update_duty(LEDC_LOW_SPEED_MODE, motor.channel);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, motor->channel, speed);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, motor->channel);
 #endif
 }
 
