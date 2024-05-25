@@ -27,7 +27,7 @@ static void pwm_timer_init_once(uint32_t freq_hz, ledc_timer_bit_t duty_resoluti
 }
 
 // Initialize a motor with custom settings
-Motor motor_init_c(uint8_t gpio_num, ledc_channel_t channel, uint8_t freq_hz, ledc_timer_bit_t duty_resolution){
+Motor motor_init_c(uint8_t gpio_num, ledc_channel_t channel, uint32_t freq_hz, ledc_timer_bit_t duty_resolution){
     pwm_timer_init_once(freq_hz, duty_resolution);
 
     Motor motor = {

@@ -10,11 +10,11 @@ typedef struct{
     uint8_t gpio_num;
     ledc_channel_t channel;
     ledc_timer_t timer;
-    uint8_t freq_hz;
+    uint32_t freq_hz;
     ledc_timer_bit_t duty_resolution;
 } Motor;
 
-Motor motor_init_c(uint8_t gpio_num, ledc_channel_t channel, uint8_t freq_hz, ledc_timer_bit_t duty_resolution);
+Motor motor_init_c(uint8_t gpio_num, ledc_channel_t channel, uint32_t freq_hz, ledc_timer_bit_t duty_resolution);
 Motor motor_init(uint8_t gpio_num, ledc_channel_t channel);
 
 void motor_set_speed(Motor motor, uint8_t speed);
