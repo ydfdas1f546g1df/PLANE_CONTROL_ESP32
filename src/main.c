@@ -1,18 +1,15 @@
 #include "driver/gpio.h"
-#include "motor_control.h"
-#include "wifi_direct.h"
-#include "telnet.h"
+#include "../lib/mototr/motor_control.h"
+#include "../lib/wifi/wifi_direct.h"
+#include "../lib/telnet/telnet.h"
+#include "../lib/LED/led.h"
 
 
 // IO pins
 #define BUTTON_LEFT 5
 #define BUTTON_RIGHT 6
-#define MOTOR_LEFT 8
-#define MOTOR_RIGHT 9
-#define LED_DEBUG 48
-#define LED_DEBUG_RED 46
-#define LED_DEBUG_GREEN 0
-#define LED_DEBUG_BLUE 45
+
+
 
 
 void gpio_reset() {
@@ -20,23 +17,18 @@ void gpio_reset() {
     gpio_reset_pin(BUTTON_RIGHT);
     gpio_reset_pin(MOTOR_LEFT);
     gpio_reset_pin(MOTOR_RIGHT);
-    gpio_reset_pin(LED_DEBUG);
-    gpio_reset_pin(LED_DEBUG_RED);
-    gpio_reset_pin(LED_DEBUG_GREEN);
-    gpio_reset_pin(LED_DEBUG_BLUE);
+    led_reset();
 
 }
 
 void gpio_set_direction_init() {
     gpio_set_direction(MOTOR_LEFT, GPIO_MODE_OUTPUT);
     gpio_set_direction(MOTOR_RIGHT, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_DEBUG, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_DEBUG_RED, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_DEBUG_GREEN, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_DEBUG_BLUE, GPIO_MODE_OUTPUT);
 
     gpio_set_direction(BUTTON_LEFT, GPIO_MODE_INPUT);
     gpio_set_direction(BUTTON_RIGHT, GPIO_MODE_INPUT);
+
+    led_set_direction_init();
 }
 
 

@@ -4,7 +4,7 @@
 #define TELNET_H
 
 #include "freertos/FreeRTOS.h"
-#include "motor_control.h"
+#include "../mototr/motor_control.h"
 
 
 #ifdef __cplusplus

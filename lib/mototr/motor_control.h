@@ -2,7 +2,8 @@
 #define LEARNESP32_MOTOR_CONTROL_H
 
 #include "driver/ledc.h"
-
+#define MOTOR_LEFT 8
+#define MOTOR_RIGHT 9
 #define DEFAULT_PWM_FREQ_HZ 5000       // Default frequency of PWM signal
 #define DEFAULT_PWM_RESOLUTION LEDC_TIMER_10_BIT // Default resolution of PWM duty
 
