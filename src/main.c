@@ -1,6 +1,6 @@
 #include "driver/gpio.h"
 #include "motor_control.h"
-#include "bluetooth.h"
+#include "wifi_direct.h"
 
 
 // IO pins
@@ -41,7 +41,7 @@ void gpio_set_direction_init() {
 
 
 void setup() {
-    bool is_error = false;
+//    bool is_error = false;
     // Reset all GPIO pins
     gpio_reset();
     gpio_set_direction_init();
@@ -56,27 +56,34 @@ void setup() {
 
 
     // Initialize Bluetooth
-    is_error = bluetooth_init("ESP32_BT_CLASSIC_PLANE") || is_error;
+//    is_error = bluetooth_init("ESP32_BT_CLASSIC_PLANE") || is_error;
 
-    is_error = bluetooth_discoverable(true) || is_error;
+    // Initialize WiFi
+
 
     // Turn off all INTERNAL RGB LEDs level 1 because somehow it is inverted
     gpio_set_level(LED_DEBUG_RED, 1);
     gpio_set_level(LED_DEBUG_GREEN, 1);
     gpio_set_level(LED_DEBUG_BLUE, 1);
 
-    //label errorinit
-    if(is_error){
-        gpio_set_level(LED_DEBUG_RED, 0);
-
-    }else{
+//    //label errorinit
+//    if(is_error){
+//        gpio_set_level(LED_DEBUG_RED, 0);
+//
+//    }else{
         gpio_set_level(LED_DEBUG_GREEN, 0);
-    }
+//    }
 
 }
 
 void app_main() {
     setup();
 
+    gpio_set_level(LED_DEBUG, 1);
+    if(wifi_init_p2p()){
+        gpio_set_level(LED_DEBUG_GREEN, 1);
+        gpio_set_level(LED_DEBUG_RED, 0);
+    }
+    gpio_set_level(LED_DEBUG, 0);
 
 }
