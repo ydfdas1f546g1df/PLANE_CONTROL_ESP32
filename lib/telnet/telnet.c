@@ -12,7 +12,9 @@ static volatile bool keepRunning = true;  // Global flag to control server opera
 static Motor *motor_left;
 static Motor *motor_right;
 
-void telnet_server_message_proccessor(char* receivedData, int len, int sock, char* response){
+
+void telnet_server_message_proccessor(char *receivedData, int len, int sock, char *response)
+{
     // Process received data
 
 
@@ -32,10 +34,12 @@ void telnet_server_message_proccessor(char* receivedData, int len, int sock, cha
      * Third, Fourth & Fifth Digit is the VALUE
      * Like % degree or other
      * */
-    switch (receivedData[0]) {
+    switch (receivedData[0])
+    {
         case '0':
             // Motor Control
-            switch (receivedData[1]) {
+            switch (receivedData[1])
+            {
                 case '0':
                     motor_set_speed(motor_left, atoi(strndup(receivedData + 2, 3)));
                     motor_set_speed(motor_right, atoi(strndup(receivedData + 2, 3)));
@@ -61,7 +65,8 @@ void telnet_server_message_proccessor(char* receivedData, int len, int sock, cha
              * 7 - Green External RIGHT
              * 8 - Green External MIDDLE
              */
-            switch (receivedData[1]) {
+            switch (receivedData[1])
+            {
                 case '0':
                     gpio_set_level(LED_DEBUG_RED, atoi(strndup(receivedData + 2, 3)));
                     gpio_set_level(LED_DEBUG_GREEN, atoi(strndup(receivedData + 2, 3)));
@@ -107,12 +112,14 @@ void telnet_server_message_proccessor(char* receivedData, int len, int sock, cha
             response[0] = 'E';
             response[1] = 'R';
     }
-send(sock, response, len, 0);//
-free(response);
+    send(sock, response, len, 0);//
+    free(response);
 
 }
 
-static void telnet_server_task(void *pvParameters) {
+
+static void telnet_server_task(void *pvParameters)
+{
     char rx_buffer[128];
     int addr_family = AF_INET;
     int ip_protocol = IPPROTO_IP;
@@ -128,7 +135,8 @@ static void telnet_server_task(void *pvParameters) {
 
     // Create a socket
     int listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
-    if (listen_sock < 0) {
+    if (listen_sock < 0)
+    {
         close(listen_sock);
         vTaskDelete(NULL);
         return;
@@ -137,7 +145,8 @@ static void telnet_server_task(void *pvParameters) {
 
     // Bind the socket to the address
     int err = bind(listen_sock, (struct sockaddr *) &dest_addr, sizeof(dest_addr));
-    if (err != 0) {
+    if (err != 0)
+    {
         close(listen_sock);
         vTaskDelete(NULL);
         return;
@@ -146,7 +155,8 @@ static void telnet_server_task(void *pvParameters) {
 
     // Start listening for incoming connections
     err = listen(listen_sock, LISTEN_QUEUE);
-    if (err != 0) {
+    if (err != 0)
+    {
         close(listen_sock);
         vTaskDelete(NULL);
         return;
@@ -154,31 +164,38 @@ static void telnet_server_task(void *pvParameters) {
 
 
     // Loop to accept incoming connections
-    while (keepRunning) {
+    while (keepRunning)
+    {
         struct sockaddr_in source_addr;
         socklen_t addr_len = sizeof(source_addr);
         // Accept a connection
         int sock = accept(listen_sock, (struct sockaddr *) &source_addr, &addr_len);
-        if (sock < 0) {
+        if (sock < 0)
+        {
             continue; // Continue trying to accept connections even if one fails
         }
 
 
-        while (1) {
+        while (1)
+        {
             int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-            if (len > 0) {
+            if (len > 0)
+            {
                 rx_buffer[len] = 0;  // Null-terminate whatever we received and treat like a string.
                 char *receivedData = rx_buffer;
                 char *response = malloc(strlen("OK: ") + strlen(receivedData) + strlen("\n") + 1);
-                if (len == 6){
+                if (len == 6)
+                {
                     telnet_server_message_proccessor(receivedData, len, &sock, response);
-                } else{
+                } else
+                {
                     send(sock, "ER: FALSE LENGTH\n", 18, 0);
 
                 }
 
 
-            } else {
+            } else
+            {
                 break;  // Break if the connection is closed or an error occurs
             }
         }
@@ -191,27 +208,34 @@ static void telnet_server_task(void *pvParameters) {
     vTaskDelete(NULL);
 }
 
-bool start_telnet_server(void) {
-    if (xTaskCreate(telnet_server_task, "telnet_server_task", 2048, NULL, 5, NULL) != pdPASS) {
+
+bool start_telnet_server(void)
+{
+    if (xTaskCreate(telnet_server_task, "telnet_server_task", 2048, NULL, 5, NULL) != pdPASS)
+    {
         return true;  // Return true to indicate error in task creation
     }
     return false;  // Return false to indicate successful task creation
 }
 
-void stop_telnet_server() {
+
+void stop_telnet_server()
+{
     keepRunning = false;  // Signal the server task to exit
 }
 
-void register_motor(Motor *motorLeft, Motor *motorRight) {
+
+void register_motor(Motor *motorLeft, Motor *motorRight)
+{
     motor_left = motorLeft;
     motor_right = motorRight;
 }
 
-void send_telnet_message(char *message) {
+
+void send_telnet_message(char *message)
+{
     int message_len = strlen(message);
-    for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (client_sockets[i] != 0) { // Check if the slot is used
-            send(client_sockets[i], message, message_len, 0);
-        }
-    }
+
+    send(client_socket, message, message_len, 0);
+
 }

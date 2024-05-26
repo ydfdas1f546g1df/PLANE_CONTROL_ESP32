@@ -1,7 +1,9 @@
 #include "led.h"
 #include "driver/gpio.h"
 
-void led_reset(){
+
+void led_reset()
+{
     gpio_reset_pin(LED_DEBUG);
     gpio_reset_pin(LED_DEBUG_RED);
     gpio_reset_pin(LED_DEBUG_GREEN);
@@ -13,7 +15,10 @@ void led_reset(){
     gpio_reset_pin(LED_GREEN_MIDDLE);
 
 }
-void led_set_direction_init(){
+
+
+void led_set_direction_init()
+{
     gpio_set_direction(LED_DEBUG, GPIO_MODE_OUTPUT);
     gpio_set_direction(LED_DEBUG_RED, GPIO_MODE_OUTPUT);
     gpio_set_direction(LED_DEBUG_GREEN, GPIO_MODE_OUTPUT);

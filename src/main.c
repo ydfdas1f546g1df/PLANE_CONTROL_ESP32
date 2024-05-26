@@ -10,9 +10,8 @@
 #define BUTTON_RIGHT 6
 
 
-
-
-void gpio_reset() {
+void gpio_reset()
+{
     gpio_reset_pin(BUTTON_LEFT);
     gpio_reset_pin(BUTTON_RIGHT);
     gpio_reset_pin(MOTOR_LEFT);
@@ -21,7 +20,9 @@ void gpio_reset() {
 
 }
 
-void gpio_set_direction_init() {
+
+void gpio_set_direction_init()
+{
     gpio_set_direction(MOTOR_LEFT, GPIO_MODE_OUTPUT);
     gpio_set_direction(MOTOR_RIGHT, GPIO_MODE_OUTPUT);
 
@@ -32,8 +33,8 @@ void gpio_set_direction_init() {
 }
 
 
-
-void setup() {
+void setup()
+{
 //    bool is_error = false;
     // Reset all GPIO pins
     gpio_reset();
@@ -64,22 +65,26 @@ void setup() {
 //        gpio_set_level(LED_DEBUG_RED, 0);
 //
 //    }else{
-        gpio_set_level(LED_DEBUG_GREEN, 0);
+    gpio_set_level(LED_DEBUG_GREEN, 0);
 //    }
 
 }
 
-void app_main() {
+
+void app_main()
+{
     // Init GPIO
     setup();
 
     // Initialize communication
     gpio_set_level(LED_DEBUG, 1);
-    if(wifi_init_p2p()){
+    if (wifi_init_p2p())
+    {
         gpio_set_level(LED_DEBUG_GREEN, 1);
         gpio_set_level(LED_DEBUG_RED, 0);
     }
-    if(start_telnet_server()){
+    if (start_telnet_server())
+    {
         gpio_set_level(LED_DEBUG_GREEN, 1);
         gpio_set_level(LED_DEBUG_RED, 0);
     }
