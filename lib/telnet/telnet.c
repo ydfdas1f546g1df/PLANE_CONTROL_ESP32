@@ -24,7 +24,6 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
         receivedData[len - 1] = 0;  // Remove the newline character
     }
 
-    sprintf(response, "OK: %s\n", receivedData);
     /**>
      * First Digit is type of command
      * 0 - Motor Control
@@ -40,6 +39,8 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
      * Third, Fourth & Fifth Digit is the VALUE
      * Like % degree or other
      * */
+    sprintf(response, "OK: %s\n", receivedData);
+
     switch (receivedData[0])
     {
         case '0':
@@ -127,7 +128,7 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
             response[1] = 'R';
             break;
     }
-    send(sock, response, len, 0);
+    send(sock, response, strlen(response), 0);
 
 }
 
