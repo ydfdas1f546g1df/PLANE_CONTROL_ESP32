@@ -9,6 +9,8 @@
 #define BUTTON_LEFT 5
 #define BUTTON_RIGHT 6
 
+static Motor motor_left;
+static Motor motor_right;
 
 void gpio_reset()
 {
@@ -43,10 +45,10 @@ void setup()
     gpio_set_level(LED_DEBUG_BLUE, 0);
 
     // Initialize motors
-    Motor motor_left = motor_init(MOTOR_LEFT, LEDC_CHANNEL_0);
-    Motor motor_right = motor_init(MOTOR_RIGHT, LEDC_CHANNEL_1);
-    motor_set_speed(motor_left, 0);
-    motor_set_speed(motor_right, 0);
+    motor_left = motor_init(MOTOR_LEFT, LEDC_CHANNEL_0);
+    motor_right = motor_init(MOTOR_RIGHT, LEDC_CHANNEL_1);
+    motor_set_speed(&motor_left, 0);
+    motor_set_speed(&motor_right, 0);
 
 
     // Initialize Bluetooth
@@ -88,7 +90,7 @@ void app_main()
         gpio_set_level(LED_DEBUG_GREEN, 1);
         gpio_set_level(LED_DEBUG_RED, 0);
     }
-    register_motor
+    register_motor(&motor_left, &motor_right);
     gpio_set_level(LED_DEBUG, 0);
 
 

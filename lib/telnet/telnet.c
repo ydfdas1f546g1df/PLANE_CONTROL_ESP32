@@ -7,7 +7,7 @@
 
 static int client_socket = 0;
 
-static const char *TAG = "TelnetServer";
+//static const char *TAG = "TelnetServer";
 static volatile bool keepRunning = true;  // Global flag to control server operation
 static Motor *motor_left;
 static Motor *motor_right;
@@ -16,7 +16,13 @@ static Motor *motor_right;
 void telnet_server_message_proccessor(char *receivedData, int len, int sock, char *response)
 {
     // Process received data
-
+    if (response == NULL)
+    {
+        return;
+    }
+    {
+        receivedData[len - 1] = 0;  // Remove the newline character
+    }
 
     sprintf(response, "OK: %s\n", receivedData);
     /**>
@@ -51,6 +57,7 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
                     motor_set_speed(motor_right, atoi(strndup(receivedData + 2, 3)));
                     break;
             }
+            break;
         case '1':
             // LED Control
             /**
@@ -65,44 +72,51 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
              * 7 - Green External RIGHT
              * 8 - Green External MIDDLE
              */
+             int ledValue = atoi(&receivedData[2]);
             switch (receivedData[1])
             {
                 case '0':
-                    gpio_set_level(LED_DEBUG_RED, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_DEBUG_GREEN, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_DEBUG_BLUE, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_RED_LEFT, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_GREEN_LEFT, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_RED_RIGTH, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_GREEN_RIGTH, atoi(strndup(receivedData + 2, 3)));
-                    gpio_set_level(LED_GREEN_MIDDLE, atoi(strndup(receivedData + 2, 3));
+                    ledValue = ledValue > 0 ? 0 : 1;
+                    gpio_set_level(LED_DEBUG_RED, ledValue);
+                    gpio_set_level(LED_DEBUG_GREEN, ledValue);
+                    gpio_set_level(LED_DEBUG_BLUE, ledValue);
+                    ledValue = ledValue > 0 ? 0 : 1;
+                    gpio_set_level(LED_RED_LEFT, ledValue);
+                    gpio_set_level(LED_GREEN_LEFT, ledValue);
+                    gpio_set_level(LED_RED_RIGTH, ledValue);
+                    gpio_set_level(LED_GREEN_RIGTH, ledValue);
+                    gpio_set_level(LED_GREEN_MIDDLE, ledValue);
                     break;
                 case '1':
-                    gpio_set_level(LED_DEBUG_RED, atoi(&receivedData[2]));
+                    ledValue = ledValue > 0 ? 0 : 1;
+                    gpio_set_level(LED_DEBUG_RED, ledValue);
                     break;
                 case '2':
-                    gpio_set_level(LED_DEBUG_GREEN, atoi(&receivedData[2]));
+                    ledValue = ledValue > 0 ? 0 : 1;
+                    gpio_set_level(LED_DEBUG_GREEN, ledValue);
                     break;
                 case '3':
-                    gpio_set_level(LED_DEBUG_BLUE, atoi(&receivedData[2]));
+                    ledValue = ledValue > 0 ? 0 : 1;
+                    gpio_set_level(LED_DEBUG_BLUE, ledValue);
                     break;
                 case '4':
-                    gpio_set_level(LED_RED_LEFT, atoi(&receivedData[2]));
+                    gpio_set_level(LED_RED_LEFT, ledValue);
                     break;
                 case '5':
-                    gpio_set_level(LED_GREEN_LEFT, atoi(&receivedData[2]));
+                    gpio_set_level(LED_GREEN_LEFT, ledValue);
                     break;
                 case '6':
-                    gpio_set_level(LED_RED_RIGTH, atoi(&receivedData[2]));
+                    gpio_set_level(LED_RED_RIGTH, ledValue);
                     break;
                 case '7':
-                    gpio_set_level(LED_GREEN_RIGTH, atoi(&receivedData[2]));
+                    gpio_set_level(LED_GREEN_RIGTH, ledValue);
                     break;
                 case '8':
-                    gpio_set_level(LED_GREEN_MIDDLE, atoi(&receivedData[2]));
+                    gpio_set_level(LED_GREEN_MIDDLE, ledValue);
                     break;
 
             }
+            break;
             //case '2':
             // Sensor Data
 
@@ -111,9 +125,9 @@ void telnet_server_message_proccessor(char *receivedData, int len, int sock, cha
         default:
             response[0] = 'E';
             response[1] = 'R';
+            break;
     }
-    send(sock, response, len, 0);//
-    free(response);
+    send(sock, response, len, 0);
 
 }
 
@@ -178,26 +192,30 @@ static void telnet_server_task(void *pvParameters)
 
         while (1)
         {
-            int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+            // Receive data
+            ssize_t len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
             if (len > 0)
             {
                 rx_buffer[len] = 0;  // Null-terminate whatever we received and treat like a string.
                 char *receivedData = rx_buffer;
                 char *response = malloc(strlen("OK: ") + strlen(receivedData) + strlen("\n") + 1);
-                if (len == 6)
+                if (len >= 5)
                 {
-                    telnet_server_message_proccessor(receivedData, len, &sock, response);
+                    telnet_server_message_proccessor(receivedData, len, sock, response);
                 } else
                 {
-                    send(sock, "ER: FALSE LENGTH\n", 18, 0);
-
+                    send(sock, "ER: FALSE LENGTH required 5digits,  2 identifier and 3 values first one treated as boolean with led\n", 100, 0);
+                    char buffer[100];
+                    sprintf(buffer, "given length: %d\n", len);
+                    send(sock, buffer, 100, 0);
                 }
 
-
+                free(response);
             } else
             {
                 break;  // Break if the connection is closed or an error occurs
             }
+
         }
 
         shutdown(sock, SHUT_RDWR);  // Disable further sends and receives on the socket

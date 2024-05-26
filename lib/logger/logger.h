@@ -1,0 +1,4 @@
+#ifndef LEARNESP32_LOGGER_H
+#define LEARNESP32_LOGGER_H
+//TODO logger.h
+#endif //LEARNESP32_LOGGER_H
