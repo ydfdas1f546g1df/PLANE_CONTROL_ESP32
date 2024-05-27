@@ -184,7 +184,7 @@ static void telnet_server_task(void *pvParameters)
         struct sockaddr_in source_addr;
         socklen_t addr_len = sizeof(source_addr);
         // Accept a connection
-        int sock = accept(listen_sock, (struct sockaddr *) &source_addr, &addr_len);
+        int sock = accept(listen_sock, (struct sockaddr*) &source_addr, &addr_len);
         if (sock < 0)
         {
             continue; // Continue trying to accept connections even if one fails
@@ -205,7 +205,7 @@ static void telnet_server_task(void *pvParameters)
                     telnet_server_message_proccessor(receivedData, len, sock, response);
                 } else
                 {
-                    send(sock, "ER: FALSE LENGTH required 5digits,  2 identifier and 3 values first one treated as boolean with led\n", 100, 0);
+                    send(sock, "ER: FALSE LENGfhgH required 5digits,  2 identifier and 3 values first one treated as boolean with led\n", 100, 0);
                     char buffer[100];
                     sprintf(buffer, "given length: %d\n", len);
                     send(sock, buffer, 100, 0);
