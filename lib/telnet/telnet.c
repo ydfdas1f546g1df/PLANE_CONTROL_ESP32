@@ -205,7 +205,8 @@ static void telnet_server_task(void *pvParameters)
                     telnet_server_message_proccessor(receivedData, len, sock, response);
                 } else
                 {
-                    send(sock, "ER: FALSE LENGfhgH required 5digits,  2 identifier and 3 values first one treated as boolean with led\n", 100, 0);
+                    char* response = "ER: FALSE LENGTH required 5digits,  2 identifier and 3 values first one treated as boolean with led\n";
+                    send(sock, response, strlen(response), 0);
                     char buffer[100];
                     sprintf(buffer, "given length: %d\n", len);
                     send(sock, buffer, 100, 0);
